@@ -2,6 +2,7 @@ import json
 import uvicorn
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException
+from datetime import datetime
 from models.AppStatus import AppStatus
 from models.User import User
 
@@ -11,8 +12,17 @@ users: list[User] = []
 
 
 @app.get("/status", status_code=HTTPStatus.OK)
-def status() -> AppStatus:
-    return AppStatus(users=bool(users))
+def status() -> dict:
+    if bool(users):
+        return {
+            "status": "ok",
+            "timestamp": datetime.now().isoformat(),
+        }
+    else:
+        return {
+            "status": "unavailable",
+            "timestamp": datetime.now().isoformat(),
+        }
 
 
 @app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
