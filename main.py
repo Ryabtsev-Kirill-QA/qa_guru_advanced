@@ -11,18 +11,11 @@ app = FastAPI()
 users: list[User] = []
 
 
-@app.get("/status", status_code=HTTPStatus.OK)
-def status() -> dict:
-    if bool(users):
-        return {
-            "status": "ok",
-            "timestamp": datetime.now().isoformat(),
-        }
-    else:
-        return {
-            "status": "unavailable",
-            "timestamp": datetime.now().isoformat(),
-        }
+@app.get("/status", status_code=HTTPStatus.OK, response_model=AppStatus)
+def status():
+    users_exist = bool(users)
+    return AppStatus(status="ok" if users_exist else "unavailable", users=users_exist,
+                     timestamp=datetime.now().isoformat())
 
 
 @app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
