@@ -11,36 +11,39 @@ def users(app_url):
     return response.json()
 
 
-def test_users(app_url):
-    response = requests.get(f"{app_url}/api/users/")
-    assert response.status_code == HTTPStatus.OK
+class TestUsersEndpoint:
+    """Тесты для эндпоинта /users"""
 
-    users = response.json()
-    for user in users:
+    def test_users(self, app_url):
+        response = requests.get(f"{app_url}/api/users/")
+        assert response.status_code == HTTPStatus.OK
+
+        users = response.json()
+        for user in users:
+            User.model_validate(user)
+
+    def test_users_no_duplicates(self, users):
+        users_ids = [user["id"] for user in users]
+        assert len(users_ids) == len(set(users_ids))
+
+
+class TestUserEndpoint:
+    """Тесты для эндпоинта /users/{user_id}"""
+
+    @pytest.mark.parametrize("user_id", [1, 6, 12])
+    def test_user(self, app_url, user_id):
+        response = requests.get(f"{app_url}/api/users/{user_id}")
+        assert response.status_code == HTTPStatus.OK
+
+        user = response.json()
         User.model_validate(user)
 
+    @pytest.mark.parametrize("user_id", [13])
+    def test_user_nonexistent_values(self, app_url, user_id):
+        response = requests.get(f"{app_url}/api/users/{user_id}")
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
-def test_users_no_duplicates(users):
-    users_ids = [user["id"] for user in users]
-    assert len(users_ids) == len(set(users_ids))
-
-
-@pytest.mark.parametrize("user_id", [1, 6, 12])
-def test_user(app_url, user_id):
-    response = requests.get(f"{app_url}/api/users/{user_id}")
-    assert response.status_code == HTTPStatus.OK
-
-    user = response.json()
-    User.model_validate(user)
-
-
-@pytest.mark.parametrize("user_id", [13])
-def test_user_nonexistent_values(app_url, user_id):
-    response = requests.get(f"{app_url}/api/users/{user_id}")
-    assert response.status_code == HTTPStatus.NOT_FOUND
-
-
-@pytest.mark.parametrize("user_id", [-1, 0, "fafaf"])
-def test_user_invalid_values(app_url, user_id):
-    response = requests.get(f"{app_url}/api/users/{user_id}")
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    @pytest.mark.parametrize("user_id", [-1, 0, "fafaf"])
+    def test_user_invalid_values(self, app_url, user_id):
+        response = requests.get(f"{app_url}/api/users/{user_id}")
+        assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
