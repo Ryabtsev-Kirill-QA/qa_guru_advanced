@@ -2,11 +2,17 @@ import json
 import uvicorn
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException
+from models.AppStatus import AppStatus
 from models.User import User
 
 app = FastAPI()
 
 users: list[User] = []
+
+
+@app.get("/status", status_code=HTTPStatus.OK)
+def status() -> AppStatus:
+    return AppStatus(users=bool(users))
 
 
 @app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
