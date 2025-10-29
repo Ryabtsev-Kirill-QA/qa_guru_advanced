@@ -8,7 +8,7 @@ from models.User import User
 def users(app_url):
     response = requests.get(f"{app_url}/api/users/")
     assert response.status_code == HTTPStatus.OK
-    return response.json()
+    return response.json()["items"]
 
 
 class TestUsersEndpoint:
@@ -18,7 +18,7 @@ class TestUsersEndpoint:
         response = requests.get(f"{app_url}/api/users/")
         assert response.status_code == HTTPStatus.OK
 
-        users = response.json()
+        users = response.json()["items"]
         for user in users:
             User.model_validate(user)
 
