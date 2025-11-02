@@ -18,6 +18,9 @@ pytest = "^8.4.2"
 python-dotenv = "^1.2.1"
 fastapi-pagination = "^0.14.3"
 email-validator = "^2.3.0"
+sqlalchemy = "^2.0.44"
+sqlmodel = "^0.0.27"
+psycopg2-binary = "^2.9.11"
 
 
 [tool.poetry]
