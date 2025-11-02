@@ -1,8 +1,8 @@
 import pytest
 import requests
 from http import HTTPStatus
-from models.User import User
-from models.Pagination import Pagination
+from app.models.User import User
+from app.models.Pagination import Pagination
 
 
 @pytest.fixture

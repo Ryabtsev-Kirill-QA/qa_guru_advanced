@@ -3,7 +3,7 @@ import dotenv
 import pytest
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def envs():
     dotenv.load_dotenv()
 
