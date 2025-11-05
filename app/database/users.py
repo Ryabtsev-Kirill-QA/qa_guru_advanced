@@ -1,8 +1,10 @@
 from typing import Iterable, Type
 from fastapi import HTTPException
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlmodel import paginate
 from sqlmodel import Session, select
 from app.database.engine import engine
-from app.models.User import User
+from app.models.User import User, UserCreate
 
 
 def get_user(user_id: int) -> User | None:
@@ -10,13 +12,15 @@ def get_user(user_id: int) -> User | None:
         return session.get(User, user_id)
 
 
-def get_users() -> Iterable[User]:
+def get_users() -> Page[User]:
     with Session(engine) as session:
-        statement = select(User)
-        return session.exec(statement).all()
+        return paginate(session, select(User))
 
 
-def create_user(user: User) -> User:
+def create_user(user_data: UserCreate) -> User:
+    user_dict = user_data.model_dump()
+    user = User(**user_dict)
+
     with Session(engine) as session:
         session.add(user)
         session.commit()
