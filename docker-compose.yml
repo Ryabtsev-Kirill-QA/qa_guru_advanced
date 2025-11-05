@@ -1,5 +1,5 @@
 # Use postgres/example user/password credentials
-version: '3.9'
+version: "3"
 
 services:
 
@@ -18,7 +18,7 @@ services:
     # Use github secrets
       POSTGRES_PASSWORD: example
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql
     ports:
       - 5432:5432
 
