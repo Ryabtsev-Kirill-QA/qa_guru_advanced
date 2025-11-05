@@ -14,7 +14,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
-    avatar: HttpUrl
+    avatar: str
 
 
 class UserUpdate(BaseModel):
