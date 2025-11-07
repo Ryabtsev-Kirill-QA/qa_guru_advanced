@@ -5,7 +5,7 @@ services:
   app:
     build: .
     environment:
-      DATABASE_ENGINE: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/postgres
+      DATABASE_ENGINE: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_USER}
     ports:
       - 8002:80
     depends_on:
@@ -24,6 +24,7 @@ services:
     #      size: 134217728 # 128*2^20 bytes = 128Mb
     environment:
     # Use github secrets
+      POSTGRES_USER:
       POSTGRES_PASSWORD:
     volumes:
       - db-data:/var/lib/postgresql
