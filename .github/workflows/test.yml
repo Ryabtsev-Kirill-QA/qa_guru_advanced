@@ -17,9 +17,7 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'poetry'
-      - run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - run: pip install poetry
       - run: poetry install --no-interaction
       - run: docker compose build
       - run: docker compose up -d
