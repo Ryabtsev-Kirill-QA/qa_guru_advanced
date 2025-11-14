@@ -12,6 +12,14 @@
 - **curlify** - логирование HTTP-запросов
 - **Faker** - генерация тестовых данных
 
+## Структура проекта
+
+- **app** — FastAPI приложение
+- **app/database** — бд
+- **app/models** — модели данных
+- **app/routers** — роуты API
+- **tests** — API тесты на приложение
+
 ## ⚙️ Быстрый старт
 
 ### 1. Клонирование и настройка
@@ -21,26 +29,36 @@ git clone https://github.com/Ryabtsev-Kirill-QA/qa_guru_advanced.git
 cd qa_guru_advanced
 ```
 
-### 2. Запуск тестов
+### 2. Установка зависимостей
+```
+pip install poetry
+poetry install
+poetry shell
+```
 
-### Тесты на dev среде (по умолчанию)
-```
-pytest tests/
-```
-### Тесты на RC среде
-```
-pytest tests/ --env=rc
-```
+### 3. Запуск приложения
 ### Проект включает Docker конфигурацию для развертывания:
 
 ### Запуск всех сервисов
 ```
-docker-compose up -d
+docker-compose up -d --build (со сборкой)
 ```
 ### Остановка
 ```
 docker-compose down
 ```
+
+### 4. Запуск тестов
+
+### Тесты на dev среде (по умолчанию)
+```
+poetry pytest tests/
+```
+### Тесты на RC среде
+```
+poetry pytest tests/ --env=rc
+```
+
 ### Проект настроен с автоматизированными workflow через GitHub Actions:
 
 - Автоматическая сборка Docker-образов
