@@ -208,6 +208,21 @@ files = [
 ]
 
 [[package]]
+name = "curlify"
+version = "3.0.0"
+description = "Convert Requests request objects to curl commands."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "curlify-3.0.0-py3-none-any.whl", hash = "sha256:52060c0eb7a656b7bde6b668c32f337bed4d736ce230755767e3ada56a09c338"},
+    {file = "curlify-3.0.0.tar.gz", hash = "sha256:7b488ff3c924dba3433a1cc74044c0942da21f0a97fa26c3138319ba640ca412"},
+]
+
+[package.dependencies]
+requests = "*"
+
+[[package]]
 name = "dnspython"
 version = "2.8.0"
 description = "DNS toolkit"
@@ -978,4 +993,4 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "070245c5d1138d9782516d23b1fb1907aee62047d7fa75950a847165062dbbd1"
+content-hash = "e86e5c2ddd81a0da4bf1eff9c16ae37cd92bd71d75b1aaaa7b9f7f33fad95579"

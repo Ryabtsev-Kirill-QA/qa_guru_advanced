@@ -9,8 +9,8 @@ from app.models.Pagination import Pagination
 class TestUsersEndpoint:
     """Тесты для эндпоинта /users"""
 
-    def test_users(self, app_url, fill_test_data):
-        response = requests.get(f"{app_url}/api/users/")
+    def test_users(self, users_api, fill_test_data):
+        response = users_api.get_users()
         assert response.status_code == HTTPStatus.OK
 
         users = response.json()["items"]
@@ -25,29 +25,29 @@ class TestUsersEndpoint:
 class TestUserEndpoint:
     """Тесты для эндпоинта /users/{user_id}"""
 
-    def test_user(self, app_url, fill_test_data):
+    def test_user(self, users_api, fill_test_data):
         for user_id in (fill_test_data[0], fill_test_data[-1]):
-            response = requests.get(f"{app_url}/api/users/{user_id}")
+            response = users_api.get_user(user_id)
             assert response.status_code == HTTPStatus.OK
             user = response.json()
             User.model_validate(user)
 
     @pytest.mark.parametrize("user_id", [10000])
-    def test_user_nonexistent_values(self, app_url, user_id):
-        response = requests.get(f"{app_url}/api/users/{user_id}")
+    def test_user_nonexistent_values(self, users_api, user_id):
+        response = users_api.get_user(user_id)
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     @pytest.mark.parametrize("user_id", [-1, 0, "fafaf"])
-    def test_user_invalid_values(self, app_url, user_id):
-        response = requests.get(f"{app_url}/api/users/{user_id}")
+    def test_user_invalid_values(self, users_api, user_id):
+        response = users_api.get_user(user_id)
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 class TestPagination:
     """Тесты для пагинации в эндпоинте /users"""
 
-    def test_default_pagination(self, app_url, fill_test_data):
-        response = requests.get(f"{app_url}/api/users/")
+    def test_default_pagination(self, users_api, fill_test_data):
+        response = users_api.get_users()
         users_with_pagination = response.json()
 
         assert response.status_code == HTTPStatus.OK
@@ -57,8 +57,8 @@ class TestPagination:
         Pagination.model_validate(users_pagination)
 
     @pytest.mark.parametrize("size, expected_pages", [(1, 12), (3, 4), (12, 1)])
-    def test_get_users_page_calculation(self, app_url, size, expected_pages, clean_database, fill_test_data):
-        response = requests.get(f"{app_url}/api/users/?size={size}")
+    def test_get_users_page_calculation(self, users_api, size, expected_pages, clean_database, fill_test_data):
+        response = users_api.get_users(size=size)
 
         assert response.status_code == HTTPStatus.OK
         assert response.json()["pages"] == expected_pages
@@ -70,18 +70,18 @@ class TestPagination:
         (1, 12, 12),
         (2, 12, 0)
     ])
-    def test_get_users_different_pages_pagination(self, app_url, page, size, expected_count, clean_database,
+    def test_get_users_different_pages_pagination(self, users_api, page, size, expected_count, clean_database,
                                                   fill_test_data):
-        response = requests.get(f"{app_url}/api/users/?page={page}&size={size}")
+        response = users_api.get_users(page=page, size=size)
 
         assert response.status_code == HTTPStatus.OK
         assert response.json()["page"] == page
         assert response.json()["size"] == size
         assert len(response.json()["items"]) == expected_count
 
-    def test_get_users_different_data_in_pages(self, app_url, fill_test_data):
-        response_page1 = requests.get(f"{app_url}/api/users/?page=1&size=6")
-        response_page2 = requests.get(f"{app_url}/api/users/?page=2&size=6")
+    def test_get_users_different_data_in_pages(self, users_api, fill_test_data):
+        response_page1 = users_api.get_users(page=1, size=6)
+        response_page2 = users_api.get_users(page=2, size=6)
 
         data_page1 = response_page1.json()
         data_page2 = response_page2.json()
@@ -94,7 +94,7 @@ class TestPagination:
 class TestCreateUser:
     """Тесты на метод POST эндпоинта /users"""
 
-    def test_create_user(self, app_url):
+    def test_create_user(self, users_api):
         fake = Faker()
         new_user_data = {
             "email": fake.email(),
@@ -103,7 +103,7 @@ class TestCreateUser:
             "avatar": fake.image_url()
         }
 
-        response = requests.post(f"{app_url}/api/users/", json=new_user_data)
+        response = users_api.create_user(new_user_data)
         new_user = response.json()
         User.model_validate(response.json())
 
@@ -112,9 +112,9 @@ class TestCreateUser:
         assert new_user["first_name"] == new_user_data["first_name"]
         assert new_user["last_name"] == new_user_data["last_name"]
 
-        requests.delete(f"{app_url}/api/users/{new_user['id']}")
+        users_api.delete_user(new_user["id"])
 
-    def test_create_user_missing_field(self, app_url):
+    def test_create_user_missing_field(self, users_api):
         fake = Faker()
         new_user_data = {
             "first_name": fake.first_name(),
@@ -122,11 +122,11 @@ class TestCreateUser:
             "avatar": fake.image_url()
         }
 
-        response = requests.post(f"{app_url}/api/users/", json=new_user_data)
+        response = users_api.create_user(new_user_data)
 
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
-    def test_create_user_invalid_email(self, app_url):
+    def test_create_user_invalid_email(self, users_api):
         fake = Faker()
         new_user_data = {
             "email": "invalid_data",
@@ -135,7 +135,7 @@ class TestCreateUser:
             "avatar": fake.image_url()
         }
 
-        response = requests.post(f"{app_url}/api/users/", json=new_user_data)
+        response = users_api.create_user(new_user_data)
 
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
@@ -143,17 +143,17 @@ class TestCreateUser:
 class TestDeleteUser:
     """Тесты на метод DELETE эндпоинта /users"""
 
-    def test_delete_user(self, app_url, create_new_user):
+    def test_delete_user(self, users_api, create_new_user):
         user_id = create_new_user["id"]
-        response = requests.delete(f"{app_url}/api/users/{user_id}")
+        response = users_api.delete_user(user_id)
 
         assert response.status_code == HTTPStatus.OK
-        get_response = requests.get(f"{app_url}/api/users/{user_id}")
+        get_response = users_api.get_user(user_id)
         assert get_response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_delete_none_existent_user(self, app_url):
+    def test_delete_none_existent_user(self, users_api):
         non_existent_user_id = 10000
-        response = requests.delete(f"{app_url}/api/users/{non_existent_user_id}")
+        response = users_api.delete_user(non_existent_user_id)
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -161,7 +161,7 @@ class TestDeleteUser:
 class TestUpdateUser:
     """Тесты на метод PATCH эндпоинта /users"""
 
-    def test_update_user(self, app_url, create_new_user):
+    def test_update_user(self, users_api, create_new_user):
         fake = Faker()
         new_user_data = {
             "email": fake.email(),
@@ -170,7 +170,7 @@ class TestUpdateUser:
             "avatar": fake.image_url()
         }
         user_id = create_new_user["id"]
-        response = requests.patch(f"{app_url}/api/users/{user_id}", json=new_user_data)
+        response = users_api.update_user(user_id, new_user_data)
         updated_user = response.json()
 
         assert response.status_code == HTTPStatus.OK
@@ -178,23 +178,23 @@ class TestUpdateUser:
         assert updated_user["first_name"] == new_user_data["first_name"]
         assert updated_user["last_name"] == new_user_data["last_name"]
 
-        requests.delete(f"{app_url}/api/users/{user_id}")
+        users_api.delete_user(user_id)
 
-    def test_get_user_after_update(self, app_url, create_new_user):
+    def test_get_user_after_update(self, users_api, create_new_user):
         fake = Faker()
         new_user_data = {"email": fake.email()}
         user_id = create_new_user["id"]
-        response = requests.patch(f"{app_url}/api/users/{user_id}", json=new_user_data)
+        response = users_api.update_user(user_id, new_user_data)
 
         assert response.status_code == HTTPStatus.OK
-        get_user = requests.get(f"{app_url}/api/users/{user_id}")
+        get_user = users_api.get_user(user_id)
         assert get_user.status_code == HTTPStatus.OK
         get_user_info = get_user.json()
         assert get_user_info["email"] == new_user_data["email"]
 
-        requests.delete(f"{app_url}/api/users/{user_id}")
+        users_api.delete_user(user_id)
 
-    def test_method_not_allowed(self, app_url, create_new_user):
+    def test_method_not_allowed(self, app_url, users_api, create_new_user):
         fake = Faker()
         new_user_data = {
             "email": fake.email(),
@@ -207,4 +207,4 @@ class TestUpdateUser:
 
         assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
-        requests.delete(f"{app_url}/api/users/{user_id}")
+        users_api.delete_user(user_id)

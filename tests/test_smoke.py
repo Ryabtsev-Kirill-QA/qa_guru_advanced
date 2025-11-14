@@ -6,15 +6,15 @@ from http import HTTPStatus
 class TestStatusEndpoint:
     """Тесты для эндпоинта /status"""
 
-    def test_status(self, app_url):
-        response = requests.get(f"{app_url}/status")
+    def test_status(self, status_api):
+        response = status_api.get_status()
 
         assert response.status_code == HTTPStatus.OK
         assert True
 
-    def test_service_not_running(self, app_url):
+    def test_service_not_running(self, status_api):
         try:
-            requests.get(f"{app_url}/status", timeout=5)
+            status_api.get_status()
             pytest.skip("Сервис запущен на порту 8002")
         except requests.exceptions.ConnectionError:
             assert False, "Ошибка подключения"
